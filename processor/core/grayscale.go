@@ -1,4 +1,4 @@
-// Package processor converts a color image to 8-bit single-channel grayscale.
+// Package core converts a color image to 8-bit single-channel grayscale.
 //
 // This is typically used as the first step before edge detection, thresholding,
 // or any algorithm that expects a single-channel image.
@@ -7,9 +7,10 @@
 //
 //	[[pipeline.steps]]
 //	name = "Grayscale"
-package processor
+package core
 
 import (
+	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
 
@@ -22,5 +23,5 @@ func (Grayscale) Process(src gocv.Mat, dst *gocv.Mat) {
 }
 
 func init() {
-	Register("Grayscale", &Grayscale{})
+	processor.Register("Grayscale", &Grayscale{})
 }

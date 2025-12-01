@@ -1,3 +1,7 @@
+// Package processor provides a registry and interface for image processing steps.
+//
+// The package implements a plugin-style architecture that allows for registering
+// custom image processing filters that can be configured via TOML files.
 package processor
 
 import (

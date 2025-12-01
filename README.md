@@ -92,10 +92,17 @@ high = 150
 | Name           | Config Keys             | Description                          |
 |----------------|-------------------------|--------------------------------------|
 | `Grayscale`    | –                       | Convert BGR → grayscale              |
+| `Erode`        | `kernel`, `iterations`  | Morphological erosion                |
+| `Dilate`       | `kernel`, `iterations`  | Morphological dilation               |
+| `MorphClose`   | `kernel`, `iterations`  | Morphological close operation        |
+| `Otsu`         | `max_value`, `invert`   | Otsu thresholding                    |
 | `GaussianBlur` | `kernel`, `sigma`       | Noise reduction with Gaussian kernel |
 | `MedianBlur`   | `k`                     | Remove salt-and-pepper noise         |
+| `Bilateral`    | `diameter`, `sigma_color`, `sigma_space` | Edge-preserving smoothing |
 | `Canny`        | `low`, `high`           | Edge detection                       |
 | `Sobel`        | `sobel_size`            | Gradient-based edge detection        |
+| `Laplacian`    | `k`                     | Second derivative edge detection     |
+| `Scharr`       | –                       | Accurate edge detection for gradients|
 
 ## Advanced Usage
 
@@ -109,6 +116,18 @@ app.Run(func(frame *gocv.Mat) {
     // Useful for overlays, saving, logging, etc.
 })
 ```
+
+### Using Built-in Processors Directly
+
+You can also use built-in processors directly in your Go code by creating instances with specific parameters:
+
+```go
+// You can create and configure processors directly
+c := gocvkit.Canny{Low: 50, High: 150}
+gb := gocvkit.GaussianBlur{Kernel: 9, Sigma: 1.8}
+```
+
+This is useful when you want to create specific instances with custom parameters programmatically.
 
 ### Adding Custom Filters
 
@@ -167,6 +186,11 @@ GoCVKit follows a clean, modular architecture:
 - **display**: Window display wrapper
 - **pipeline**: Efficient double-buffered processing pipeline
 - **processor**: Extensible filter system with auto-configuration
+  - **registry**: Central registry for all processor types
+  - **auto_config**: Automatic configuration for user-defined filters
+  - **core**: Basic image processing filters (Grayscale, Erode, Dilate, etc.)
+  - **blurs**: Blurring and smoothing filters (GaussianBlur, MedianBlur, etc.)
+  - **edges**: Edge detection filters (Canny, Sobel, etc.)
 
 ## Use Cases
 

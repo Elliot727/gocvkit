@@ -1,9 +1,10 @@
-// Package processor provides Sobel edge detection filter implementation.
+// Package edges provides Sobel edge detection filter implementation.
 //
 // The Sobel filter performs edge detection using the Sobel operator with a configurable kernel size.
-package processor
+package edges
 
 import (
+	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
 
@@ -34,7 +35,7 @@ func (s *Sobel) Process(src gocv.Mat, dst *gocv.Mat) {
 
 func init() {
 	// Register directly with default kernel size of 3
-	Register("Sobel", &Sobel{
+	processor.Register("Sobel", &Sobel{
 		K: 3,
 	})
 }

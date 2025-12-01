@@ -1,9 +1,10 @@
-// Package processor provides median blur filter implementation.
+// Package blurs provides median blur filter implementation.
 //
 // The median blur filter applies median filtering with a configurable kernel size.
-package processor
+package blurs
 
 import (
+	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
 
@@ -29,7 +30,7 @@ func (m *MedianBlur) Process(src gocv.Mat, dst *gocv.Mat) {
 
 func init() {
 	// Register directly with a sensible default
-	Register("MedianBlur", &MedianBlur{
+	processor.Register("MedianBlur", &MedianBlur{
 		K: 5,
 	})
 }

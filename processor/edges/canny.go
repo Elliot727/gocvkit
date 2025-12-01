@@ -1,9 +1,10 @@
-// Package processor provides Canny edge detection filter implementation.
+// Package edges provides Canny edge detection filter implementation.
 //
 // The Canny filter detects edges in an image using configurable low and high thresholds.
-package processor
+package edges
 
 import (
+	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
 
@@ -20,5 +21,8 @@ func (c *Canny) Process(src gocv.Mat, dst *gocv.Mat) {
 
 func init() {
 	// Clean and obvious
-	Register("Canny", &Canny{Low: 50, High: 150})
+	processor.Register("Canny", &Canny{
+		Low:  50,
+		High: 150,
+	})
 }

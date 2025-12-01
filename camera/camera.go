@@ -14,8 +14,8 @@ import "gocv.io/x/gocv"
 
 // Camera represents an open video source (webcam or file).
 type Camera struct {
-	device int                 // device is the camera device ID when using webcam
-	file   string              // file is the path to video file when using file input
+	device int                // device is the camera device ID when using webcam
+	file   string             // file is the path to video file when using file input
 	cap    *gocv.VideoCapture // cap is the underlying video capture instance
 }
 

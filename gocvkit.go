@@ -27,16 +27,40 @@ package gocvkit
 import (
 	"github.com/Elliot727/gocvkit/app"
 	"github.com/Elliot727/gocvkit/processor"
+
+	// Import sub-packages to alias them.
+	// This automatically runs their init() functions, so "Grayscale" is registered.
+	"github.com/Elliot727/gocvkit/processor/blurs"
+	"github.com/Elliot727/gocvkit/processor/core"
+	"github.com/Elliot727/gocvkit/processor/edges"
 )
 
-// NewApp is a top-level convenience function that creates and returns
-// a fully configured App instance from a TOML config path.
+// NewApp creates a fully configured App instance from a TOML config path.
 func NewApp(cfgPath string) (*app.App, error) {
 	return app.New(cfgPath)
 }
 
-// RegisterProcessor is a top-level convenience function that allows you
-// to regiser processes externally.
+// RegisterProcessor allows external registration of custom processes.
 func RegisterProcessor(name string, item any) {
 	processor.Register(name, item)
 }
+
+// ---------------------------------------------------------
+// EXPORTED FILTERS (Type Aliases)
+// ---------------------------------------------------------
+// This allows users to use 'gocvkit.Canny' instead of 'edges.Canny'.
+
+type Grayscale = core.Grayscale
+type Erode = core.Erode
+type Dilate = core.Dilate
+type MorphClose = core.MorphClose
+type Otsu = core.Otsu
+
+type Canny = edges.Canny
+type Sobel = edges.Sobel
+type Laplacian = edges.Laplacian
+type Scharr = edges.Scharr
+
+type GaussianBlur = blurs.GaussianBlur
+type MedianBlur = blurs.MedianBlur
+type Bilateral = blurs.Bilateral

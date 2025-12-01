@@ -1,3 +1,8 @@
+// Package processor provides utilities for automatic configuration of processing steps.
+//
+// The auto_config module implements the reflection-based mechanism that allows
+// users to define simple Processable structs with TOML tags, which are then
+// automatically configured based on the parameters in the TOML configuration file.
 package processor
 
 import (
@@ -18,8 +23,10 @@ type autoWrapper struct {
 	impl Processable
 }
 
+// Name returns the name of the processing step.
 func (a *autoWrapper) Name() string { return a.name }
 
+// Process executes the processing step on the provided source and destination matrices.
 func (a *autoWrapper) Process(src gocv.Mat, dst *gocv.Mat) {
 	a.impl.Process(src, dst)
 }

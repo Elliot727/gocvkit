@@ -1,11 +1,12 @@
-// Package processor provides Gaussian blur filter implementation.
+// Package blurs provides Gaussian blur filter implementation.
 //
 // The Gaussian blur filter applies a Gaussian kernel with configurable size and sigma.
-package processor
+package blurs
 
 import (
 	"image"
 
+	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
 
@@ -33,7 +34,7 @@ func (g *GaussianBlur) Process(src gocv.Mat, dst *gocv.Mat) {
 func init() {
 	// Register directly with default values.
 	// The smart Register function handles the wrapping.
-	Register("GaussianBlur", &GaussianBlur{
+	processor.Register("GaussianBlur", &GaussianBlur{
 		Kernel: 9,
 		Sigma:  1.8,
 	})
