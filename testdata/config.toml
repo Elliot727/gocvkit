@@ -1,0 +1,19 @@
+[app]
+window_name = "GoCV"
+
+[camera]
+device_id = 0
+file = ""
+
+[[pipeline.steps]]
+name = "Grayscale"
+
+[[pipeline.steps]]
+name = "GaussianBlur"
+kernel = 9
+sigma = 1.8
+
+[[pipeline.steps]]
+name = "Canny"
+low = 50
+high = 150
