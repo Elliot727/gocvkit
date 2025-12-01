@@ -17,7 +17,7 @@ package main
 
 import (
     "log"
-    "gocvkit"
+    "github.com/Elliot727/gocvkit"
 )
 
 func main() {
@@ -39,7 +39,7 @@ That's it! No boilerplate, no crashes, no resource leaks.
 ## Installation
 
 ```bash
-go get github.com/elliot727/gocvkit@v0.1.0
+go get github.com/elliot727/gocvkit
 ```
 
 ### Prerequisites
@@ -120,7 +120,7 @@ package main
 
 import (
     "gocv.io/x/gocv"
-    "gocvkit"
+    "github.com/Elliot727/gocvkit"
 )
 
 // RedTint adds a red tint to the image
