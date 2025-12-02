@@ -1,4 +1,4 @@
-# GoCVKit v0.1.0
+# GoCVKit
 **The OpenCV framework Go was waiting for**
 Zero boilerplate • Hot reload • Zero leaks • Actually fun to use
 
@@ -56,6 +56,8 @@ Create a `config.toml` file to define your pipeline:
 ```toml
 [app]
 window_name = "GoCVKit – Live Edge Detection"
+record = true        # Enable video recording (optional)
+output = "output.mp4" # Output video file path (optional, defaults to "gocvkit_capture.mp4")
 
 [camera]
 device_id = 0
@@ -75,12 +77,19 @@ low = 50
 high = 150
 ```
 
+## Controls
+
+- **Esc** or **q**: Quit the application
+- **f**: Toggle FPS display overlay on/off
+
 ## Key Features
 
 - **One-line startup**: Full application in ≤10 lines of code
 - **Live config hot-reload**: Edit `config.toml` → instant pipeline update
 - **Zero per-frame allocations**: Efficient double-buffer pipeline
 - **Frame callbacks**: Overlay, logging, and recording support
+- **Video recording**: Record processed video with automatic file rotation
+- **FPS overlay**: Real-time performance monitoring with toggleable FPS display
 - **Graceful shutdown**: Ctrl+C and Esc/q handling with zero resource leaks
 - **Extensible plugin system**: Register custom processors from anywhere
 - **Zero-boilerplate AutoConfig**: Dynamic parameters with reflection
@@ -213,5 +222,3 @@ MIT © 2025 elliot727
 **Tell everyone** — Go deserves this.
 
 Made with passion by [@elliot727](https://github.com/elliot727)
-
-**GoCVKit v0.1.0 — The future of real-time computer vision in Go starts here.**

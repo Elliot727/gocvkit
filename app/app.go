@@ -13,6 +13,9 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"image"
+	"image/color"
 	"log"
 	"os"
 	"os/signal"
@@ -25,6 +28,7 @@ import (
 	"github.com/Elliot727/gocvkit/config"
 	"github.com/Elliot727/gocvkit/display"
 	"github.com/Elliot727/gocvkit/pipeline"
+	"github.com/Elliot727/gocvkit/recorder"
 
 	"github.com/fsnotify/fsnotify"
 	"gocv.io/x/gocv"
@@ -32,8 +36,9 @@ import (
 
 // App represents a fully configured and running computer vision application.
 type App struct {
-	mu         sync.RWMutex       // mu provides thread-safe access to mutable fields
-	Camera     *camera.Camera     // Camera handles video input from webcam or file
+	mu         sync.RWMutex   // mu provides thread-safe access to mutable fields
+	Camera     *camera.Camera // Camera handles video input from webcam or file
+	Recorder   *recorder.Recorder // Recorder manages video file output
 	Display    *display.Display   // Display shows processed frames in a window
 	Pipeline   *pipeline.Pipeline // Pipeline processes frames through configured steps
 	Config     *config.Config     // Config holds the current application configuration
@@ -53,17 +58,26 @@ func New(cfgPath string) (*App, error) {
 		return nil, err
 	}
 
+	output := cfg.App.Output
+	if output == "" {
+		output = "gocvkit_capture.mp4"
+	}
+
+	rec := recorder.NewRecorder(output)
+
 	win := display.New(cfg.App.WindowName)
 
 	steps, err := builder.BuildPipeline(cfg)
 	if err != nil {
 		cam.Close()
+
 		win.Close()
 		return nil, err
 	}
 
 	a := &App{
 		Camera:     cam,
+		Recorder:   rec,
 		Display:    win,
 		Pipeline:   pipeline.New(steps),
 		Config:     cfg,
@@ -78,7 +92,7 @@ func New(cfgPath string) (*App, error) {
 func (a *App) Close() {
 	a.Camera.Close()
 	a.Display.Close()
-
+	a.Recorder.Close()
 	a.mu.Lock()
 	if a.Pipeline != nil {
 		a.Pipeline.Close()
@@ -112,6 +126,7 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 	results := make(chan gocv.Mat, 10)
 
 	delay := 1
+	recFPS := 30.0
 	if a.Config.Camera.File != "" {
 		fps := a.Camera.FPS()
 
@@ -119,9 +134,16 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 		if fps <= 0 || fps > 200 {
 			fps = 30.0
 		}
-
+		recFPS = fps
 		// 1000ms / FPS = delay in ms (e.g., 30fps -> 33ms)
 		delay = int(1000.0 / fps)
+	}
+
+	if a.Config.App.Record {
+		if fps := a.Camera.FPS(); fps > 0 {
+			recFPS = fps
+		}
+		a.Recorder.SetFPS(recFPS)
 	}
 
 	go func() {
@@ -170,6 +192,20 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 			}
 		}
 	}()
+	// ---------------------------------------------------------
+	// MAIN DISPLAY LOOP (Stabilized)
+	// ---------------------------------------------------------
+
+	showFPS := false
+
+	// Setup "Bucket" variables for stable FPS calculation
+	fpsTicker := time.Now() // The starting gun
+	fpsCounter := 0         // The bucket of frames
+	fpsText := "FPS: --"    // The text we actually draw (updated rarely)
+
+	// Pre-allocate colors
+	green := color.RGBA{0, 255, 0, 0}
+	blackShadow := color.RGBA{0, 0, 0, 0}
 
 	for {
 		select {
@@ -177,15 +213,59 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 			return ctx.Err()
 		case m, ok := <-results:
 			if !ok {
-				return nil // Pipeline finished (e.g. end of video)
+				return nil
 			}
 
+			// 1. Run User Callback
 			frameCallback(&m)
+
+			// 2. Update FPS Logic
+			fpsCounter++
+
+			// Only recalculate the text string every 500ms (0.5 seconds)
+			if time.Since(fpsTicker) >= 500*time.Millisecond {
+				// Calculate average: Frames / Seconds Elapsed
+				currentFPS := float64(fpsCounter) / time.Since(fpsTicker).Seconds()
+				fpsText = fmt.Sprintf("FPS: %.1f", currentFPS)
+
+				// Reset the bucket
+				fpsCounter = 0
+				fpsTicker = time.Now()
+			}
+
+			// 3. Draw the Overlay (if enabled)
+			if showFPS {
+				// FIX: If image is Grayscale (1-channel), convert to BGR (3-channel).
+				// Otherwise, Green text (0, 255, 0) is drawn as Black (0) on a Black background.
+				if m.Channels() == 1 {
+					gocv.CvtColor(m, &m, gocv.ColorGrayToBGR)
+				}
+
+				// Draw drop shadow first (black), then text (green) for readability
+				gocv.PutText(&m, fpsText, image.Pt(11, 31), gocv.FontHersheyPlain, 1.5, blackShadow, 3)
+				gocv.PutText(&m, fpsText, image.Pt(10, 30), gocv.FontHersheyPlain, 1.5, green, 2)
+			}
+
+			// 4. Record (Smart Recorder handles format changes)
+			if a.Config.App.Record {
+				a.Recorder.Write(m)
+			}
+
+			// 5. Display
 			a.Display.Show(m)
 
-			// Wait for the correct duration (1ms for webcam, ~33ms for video)
-			if key := a.Display.Key(delay); key == 27 || key == 'q' || key == 'Q' {
+			// 6. Handle Input
+			// Use the calculated 'delay' from earlier in the function
+			key := a.Display.Key(delay)
+
+			// Quit on 'q' or Esc (27)
+			if key == 27 || key == 'q' || key == 'Q' {
 				return nil
+			}
+
+			// Toggle FPS on 'f'
+			if key == 'f' || key == 'F' {
+				showFPS = !showFPS
 			}
 
 			m.Close()

@@ -16,6 +16,8 @@ import (
 type Config struct {
 	App struct {
 		WindowName string `toml:"window_name"` // WindowName is the title for the display window
+		Record     bool   `toml:"record"`      // Record enables video recording when set to true
+		Output     string `toml:"output"`      // Output is the path for the recorded video file
 	} `toml:"app"`
 
 	Camera struct {
