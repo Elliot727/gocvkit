@@ -17,6 +17,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -29,6 +30,7 @@ import (
 	"github.com/Elliot727/gocvkit/display"
 	"github.com/Elliot727/gocvkit/pipeline"
 	"github.com/Elliot727/gocvkit/recorder"
+	"github.com/Elliot727/gocvkit/streamer"
 
 	"github.com/fsnotify/fsnotify"
 	"gocv.io/x/gocv"
@@ -36,9 +38,10 @@ import (
 
 // App represents a fully configured and running computer vision application.
 type App struct {
-	mu         sync.RWMutex   // mu provides thread-safe access to mutable fields
-	Camera     *camera.Camera // Camera handles video input from webcam or file
+	mu         sync.RWMutex       // mu provides thread-safe access to mutable fields
+	Camera     *camera.Camera     // Camera handles video input from webcam or file
 	Recorder   *recorder.Recorder // Recorder manages video file output
+	Streamer   *streamer.MJPEGStreamer
 	Display    *display.Display   // Display shows processed frames in a window
 	Pipeline   *pipeline.Pipeline // Pipeline processes frames through configured steps
 	Config     *config.Config     // Config holds the current application configuration
@@ -67,6 +70,12 @@ func New(cfgPath string) (*App, error) {
 
 	win := display.New(cfg.App.WindowName)
 
+	str := streamer.NewMJPEGStreamer()
+
+	if cfg.Stream.Quality == 0 {
+		cfg.Stream.Quality = 75
+	}
+
 	steps, err := builder.BuildPipeline(cfg)
 	if err != nil {
 		cam.Close()
@@ -78,12 +87,20 @@ func New(cfgPath string) (*App, error) {
 	a := &App{
 		Camera:     cam,
 		Recorder:   rec,
+		Streamer:   str,
 		Display:    win,
 		Pipeline:   pipeline.New(steps),
 		Config:     cfg,
 		configPath: cfgPath,
 	}
 
+	if cfg.Stream.Enabled {
+		mux := http.NewServeMux()
+		mux.Handle(cfg.Stream.Path, str)
+
+		addr := fmt.Sprintf(":%d", cfg.Stream.Port)
+		go http.ListenAndServe(addr, mux)
+	}
 	go a.watchConfig() // fire-and-forget hot reload
 	return a, nil
 }
@@ -92,6 +109,7 @@ func New(cfgPath string) (*App, error) {
 func (a *App) Close() {
 	a.Camera.Close()
 	a.Display.Close()
+
 	a.Recorder.Close()
 	a.mu.Lock()
 	if a.Pipeline != nil {
@@ -192,9 +210,6 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 			}
 		}
 	}()
-	// ---------------------------------------------------------
-	// MAIN DISPLAY LOOP (Stabilized)
-	// ---------------------------------------------------------
 
 	showFPS := false
 
@@ -249,6 +264,10 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 			// 4. Record (Smart Recorder handles format changes)
 			if a.Config.App.Record {
 				a.Recorder.Write(m)
+			}
+
+			if a.Config.Stream.Enabled {
+				a.Streamer.Broadcast(m, a.Config.Stream.Quality)
 			}
 
 			// 5. Display

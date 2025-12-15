@@ -63,6 +63,12 @@ output = "output.mp4" # Output video file path (optional, defaults to "gocvkit_c
 device_id = 0
 # file = "demo.mp4"  # Use video file instead of webcam
 
+[stream]
+enabled = true        # Enable MJPEG streaming
+port = 8080           # Port for the stream server
+path = "/stream"      # Path for the stream endpoint
+quality = 75          # JPEG quality (0-100, higher is better)
+
 [[pipeline.steps]]
 name = "Grayscale"
 
@@ -89,6 +95,7 @@ high = 150
 - **Zero per-frame allocations**: Efficient double-buffer pipeline
 - **Frame callbacks**: Overlay, logging, and recording support
 - **Video recording**: Record processed video with automatic file rotation
+- **MJPEG Streaming**: Stream processed video over HTTP to multiple clients
 - **FPS overlay**: Real-time performance monitoring with toggleable FPS display
 - **Graceful shutdown**: Ctrl+C and Esc/q handling with zero resource leaks
 - **Extensible plugin system**: Register custom processors from anywhere

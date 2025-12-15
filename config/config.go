@@ -25,6 +25,13 @@ type Config struct {
 		File     string `toml:"file"`      // File is the path to a video file (takes precedence over DeviceID)
 	} `toml:"camera"`
 
+	Stream struct {
+		Enabled bool   `toml:"enabled"`
+		Port    int    `toml:"port"`
+		Path    string `toml:"path"`
+		Quality int    `toml:"quality"`
+	}
+
 	Pipeline struct {
 		Steps []StepConfig `toml:"steps"` // Steps contains the ordered list of processing steps
 	} `toml:"pipeline"`
