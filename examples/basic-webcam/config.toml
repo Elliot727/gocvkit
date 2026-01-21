@@ -1,0 +1,19 @@
+[app]
+window_name = "GoCVKit – Basic Canny Demo"
+fps_overlay = true
+
+[camera]
+device_id = 0
+
+[[pipeline.steps]]
+name = "Grayscale"
+
+[[pipeline.steps]]
+name = "GaussianBlur"
+kernel = 7
+sigma = 1.5
+
+[[pipeline.steps]]
+name = "Canny"
+low = 60
+high = 180

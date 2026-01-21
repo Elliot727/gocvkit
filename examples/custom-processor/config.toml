@@ -1,0 +1,11 @@
+[app]
+window_name = "GoCVKit - Canny Edge Detection"
+
+[camera]
+device_id = 0
+
+[[pipeline.steps]]
+name = "CannyEdge"
+low = 50.0
+high = 150.0
+enabled = true

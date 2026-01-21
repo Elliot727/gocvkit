@@ -1,0 +1,15 @@
+[app]
+window_name = "GoCVKit – Web Streaming"
+fps_overlay = true
+
+[camera]
+device_id = 0
+
+[stream]
+enabled = true
+port = 8080
+path = "/stream"
+quality = 75
+
+[[pipeline.steps]]
+name = "Grayscale"
