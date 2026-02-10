@@ -105,20 +105,26 @@ high = 150
 
 ## Built-in Processors
 
-| Name           | Config Keys             | Description                          |
-|----------------|-------------------------|--------------------------------------|
-| `Grayscale`    | –                       | Convert BGR → grayscale              |
-| `Erode`        | `kernel`, `iterations`  | Morphological erosion                |
-| `Dilate`       | `kernel`, `iterations`  | Morphological dilation               |
-| `MorphClose`   | `kernel`, `iterations`  | Morphological close operation        |
-| `Otsu`         | `max_value`, `invert`   | Otsu thresholding                    |
-| `GaussianBlur` | `kernel`, `sigma`       | Noise reduction with Gaussian kernel |
-| `MedianBlur`   | `k`                     | Remove salt-and-pepper noise         |
-| `Bilateral`    | `diameter`, `sigma_color`, `sigma_space` | Edge-preserving smoothing |
-| `Canny`        | `low`, `high`           | Edge detection                       |
-| `Sobel`        | `sobel_size`            | Gradient-based edge detection        |
-| `Laplacian`    | `k`                     | Second derivative edge detection     |
-| `Scharr`       | –                       | Accurate edge detection for gradients|
+| Name                   | Config Keys                                  | Description                          |
+|------------------------|---------------------------------------------|--------------------------------------|
+| `Grayscale`            | –                                           | Convert BGR → grayscale              |
+| `Erode`                | `kernel`, `iterations`                      | Morphological erosion                |
+| `Dilate`               | `kernel`, `iterations`                      | Morphological dilation               |
+| `MorphClose`           | `kernel`, `iterations`                      | Morphological close operation        |
+| `Otsu`                 | `max_value`, `invert`                       | Otsu thresholding                    |
+| `Flip`                 | `mode`                                      | Flip image horizontally/vertically   |
+| `Resize`               | `width`, `height`                           | Resize image to specified dimensions |
+| `Rotate`               | `angle`                                     | Rotate image by specified angle      |
+| `Adaptive`             | `max_value`, `block_size`, `c`              | Adaptive thresholding                |
+| `ColorConvert`         | `code`                                      | Convert between color spaces         |
+| `BackgroundSubtractor` | `algorithm`, `learning_rate`                | Background subtraction               |
+| `GaussianBlur`         | `kernel`, `sigma`                           | Noise reduction with Gaussian kernel |
+| `MedianBlur`           | `k`                                         | Remove salt-and-pepper noise         |
+| `Bilateral`            | `diameter`, `sigma_color`, `sigma_space`    | Edge-preserving smoothing            |
+| `Canny`                | `low`, `high`                               | Edge detection                       |
+| `Sobel`                | `sobel_size`                                | Gradient-based edge detection        |
+| `Laplacian`            | `k`                                         | Second derivative edge detection     |
+| `Scharr`               | –                                           | Accurate edge detection for gradients|
 
 ## Advanced Usage
 

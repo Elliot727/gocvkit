@@ -52,27 +52,54 @@ func RegisterProcessor(name string, item any) {
 
 // Grayscale is an alias for core.Grayscale, providing color to grayscale conversion.
 type Grayscale = core.Grayscale
+
 // Erode is an alias for core.Erode, providing morphological erosion filtering.
 type Erode = core.Erode
+
 // Dilate is an alias for core.Dilate, providing morphological dilation filtering.
 type Dilate = core.Dilate
+
 // MorphClose is an alias for core.MorphClose, providing morphological closing operation.
 type MorphClose = core.MorphClose
+
 // Otsu is an alias for core.Otsu, providing Otsu threshold filtering.
 type Otsu = core.Otsu
 
+// Flip is an alias for core.Flip, providing image flipping functionality.
+type Flip = core.Flip
+
+// Resize is an alias for core.Resize, providing image resizing functionality.
+type Resize = core.Resize
+
+// Rotate is an alias for core.Rotate, providing image rotation functionality.
+type Rotate = core.Rotate
+
+// Adaptive is an alias for core.Adaptive, providing adaptive threshold filtering.
+type Adaptive = core.Adaptive
+
+// ColorConvert is an alias for core.ColorConvert, providing color space conversion.
+type ColorConvert = core.ColorConvert
+
 // Canny is an alias for edges.Canny, providing Canny edge detection.
 type Canny = edges.Canny
+
 // Sobel is an alias for edges.Sobel, providing Sobel edge detection.
 type Sobel = edges.Sobel
+
 // Laplacian is an alias for edges.Laplacian, providing Laplacian edge detection.
 type Laplacian = edges.Laplacian
+
 // Scharr is an alias for edges.Scharr, providing Scharr edge detection.
 type Scharr = edges.Scharr
 
+// BackgroundSubtractor is an alias for edges.BackgroundSubtractor, providing background subtraction.
+type BackgroundSubtractor = edges.BackgroundSubtractor
+
 // GaussianBlur is an alias for blurs.GaussianBlur, providing Gaussian blur filtering.
 type GaussianBlur = blurs.GaussianBlur
+
 // MedianBlur is an alias for blurs.MedianBlur, providing median blur filtering.
 type MedianBlur = blurs.MedianBlur
+
 // Bilateral is an alias for blurs.Bilateral, providing bilateral filtering.
 type Bilateral = blurs.Bilateral
