@@ -17,10 +17,17 @@ import (
 // Grayscale converts color images to grayscale.
 type Grayscale struct{}
 
-// Process converts src from BGR to grayscale and writes the result to dst.
-func (Grayscale) Process(src gocv.Mat, dst *gocv.Mat) {
-	gocv.CvtColor(src, dst, gocv.ColorBGRToGray)
+func (g *Grayscale) Validate() error {
+	return nil
 }
+
+// Process converts src from BGR to grayscale and writes the result to dst.
+func (Grayscale) Process(src gocv.Mat, dst *gocv.Mat) error {
+	gocv.CvtColor(src, dst, gocv.ColorBGRToGray)
+	return nil
+}
+
+func (g *Grayscale) Close() {}
 
 func init() {
 	processor.Register("Grayscale", &Grayscale{})

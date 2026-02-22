@@ -5,6 +5,8 @@
 package core
 
 import (
+	"fmt"
+
 	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
@@ -13,12 +15,34 @@ import (
 type Otsu struct {
 	MaxValue float32 `toml:"max_value"` // MaxValue is the maximum value to use with the threshold
 	Invert   bool    `toml:"invert"`    // Invert indicates whether to invert the threshold result
+	flags    gocv.ThresholdType
+}
+
+func (o *Otsu) Validate() error {
+	if o.MaxValue <= 0 {
+		return fmt.Errorf("max_value must be > 0, got %f", o.MaxValue)
+	}
+
+	// Pre-calculate the combined flag
+	o.flags = gocv.ThresholdBinary | gocv.ThresholdOtsu
+	if o.Invert {
+		o.flags |= gocv.ThresholdBinaryInv
+	}
+
+	return nil
 }
 
 // Process applies Otsu thresholding using the configured parameters.
-func (o *Otsu) Process(src gocv.Mat, dst *gocv.Mat) {
-	gocv.Threshold(src, dst, 0, o.MaxValue, gocv.ThresholdBinary|gocv.ThresholdOtsu)
+func (o *Otsu) Process(src gocv.Mat, dst *gocv.Mat) error {
+	if src.Empty() {
+		return nil
+	}
+
+	gocv.Threshold(src, dst, 0, o.MaxValue, o.flags)
+	return nil
 }
+
+func (o *Otsu) Close() {}
 
 func init() {
 	processor.Register("Otsu", &Otsu{

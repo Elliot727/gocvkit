@@ -4,6 +4,8 @@
 package edges
 
 import (
+	"fmt"
+
 	"github.com/Elliot727/gocvkit/processor"
 	"gocv.io/x/gocv"
 )
@@ -13,28 +15,32 @@ type Sobel struct {
 	K int `toml:"sobel_size"` // K is the kernel size for Sobel edge detection (will be made odd if even)
 }
 
-// Process applies the Sobel operator and normalizes the output to 8-bit.
-func (s *Sobel) Process(src gocv.Mat, dst *gocv.Mat) {
-	k := s.K
-
-	// Enforce valid Sobel kernel: positive odd integer
-	if k < 1 {
-		k = 1
+func (s *Sobel) Validate() error {
+	if s.K <= 0 {
+		return fmt.Errorf("kernel size must be > 0, got %d", s.K)
 	}
-	if k%2 == 0 {
-		k++
+	if s.K%2 == 0 {
+		return fmt.Errorf("kernel size must be odd, got %d", s.K)
 	}
-
-	// Apply Sobel in both directions (dx=1, dy=1)
-	// We use CV16S to avoid overflow, then convert back to 8-bit
-	gocv.Sobel(src, dst, gocv.MatTypeCV16S, 1, 1, k, 1.0, 0, gocv.BorderDefault)
-
-	// Convert to absolute values and scale to 8-bit for display
-	gocv.ConvertScaleAbs(*dst, dst, 1, 0)
+	return nil
 }
 
+// Process applies the Sobel operator and normalizes the output to 8-bit.
+func (s *Sobel) Process(src gocv.Mat, dst *gocv.Mat) error {
+	if src.Empty() {
+		return nil
+	}
+
+	gocv.Sobel(src, dst, gocv.MatTypeCV16S, 1, 1, s.K, 1.0, 0, gocv.BorderDefault)
+
+	gocv.ConvertScaleAbs(*dst, dst, 1, 0)
+
+	return nil
+}
+
+func (s *Sobel) Close() {}
+
 func init() {
-	// Register directly with default kernel size of 3
 	processor.Register("Sobel", &Sobel{
 		K: 3,
 	})

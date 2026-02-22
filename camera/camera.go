@@ -10,7 +10,9 @@
 // convenient helpers (Width, Height, FPS).
 package camera
 
-import "gocv.io/x/gocv"
+import (
+	"gocv.io/x/gocv"
+)
 
 // Camera represents an open video source (webcam or file).
 type Camera struct {

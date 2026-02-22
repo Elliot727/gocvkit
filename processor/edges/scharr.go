@@ -12,10 +12,21 @@ import (
 // Scharr defines the configuration for Scharr edge detection filter.
 type Scharr struct{}
 
-// Process applies Scharr edge detection.
-func (s *Scharr) Process(src gocv.Mat, dst *gocv.Mat) {
-	gocv.Scharr(src, dst, gocv.MatTypeCV16S, 1, 0, 1, 0, gocv.BorderDefault)
+func (s *Scharr) Validate() error {
+	return nil
 }
+
+// Process applies Scharr edge detection.
+func (s *Scharr) Process(src gocv.Mat, dst *gocv.Mat) error {
+	if src.Empty() {
+		return nil
+	}
+
+	gocv.Scharr(src, dst, gocv.MatTypeCV16S, 1, 0, 1, 0, gocv.BorderDefault)
+	return nil
+}
+
+func (s *Scharr) Close() {}
 
 func init() {
 	processor.Register("Scharr", &Scharr{})

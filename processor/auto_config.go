@@ -16,6 +16,10 @@ import (
 	"gocv.io/x/gocv"
 )
 
+type Validator interface {
+	Validate() error
+}
+
 // autoWrapper wraps a user's Processable to add the Name() method required by Step.
 // This allows users to implement just Process() without worrying about names.
 type autoWrapper struct {
@@ -27,8 +31,15 @@ type autoWrapper struct {
 func (a *autoWrapper) Name() string { return a.name }
 
 // Process executes the processing step on the provided source and destination matrices.
-func (a *autoWrapper) Process(src gocv.Mat, dst *gocv.Mat) {
-	a.impl.Process(src, dst)
+func (a *autoWrapper) Process(src gocv.Mat, dst *gocv.Mat) error {
+	return a.impl.Process(src, dst)
+}
+
+func (a *autoWrapper) Close() {
+	// Check if the underlying struct has a Close() method
+	if c, ok := a.impl.(interface{ Close() }); ok {
+		c.Close()
+	}
 }
 
 // AutoConfig generates a Factory that creates configured instances of the provided default struct.
@@ -64,11 +75,19 @@ func AutoConfig(defaults Processable) Factory {
 				return nil, fmt.Errorf("invalid parameters for processor %q: %w", cfg.Name, err)
 			}
 		}
+		step := newStepPtr.Interface()
+
+		if v, ok := step.(Validator); ok {
+			if err := v.Validate(); err != nil {
+				return nil, fmt.Errorf("validation failed for %q: %w", cfg.Name, err)
+			}
+		}
+		proc, _ := step.(Processable)
 
 		// 3. Return the wrapped Step
 		return &autoWrapper{
 			name: cfg.Name, // Use the name from the config file
-			impl: newStepPtr.Interface().(Processable),
+			impl: proc,
 		}, nil
 	}
 }

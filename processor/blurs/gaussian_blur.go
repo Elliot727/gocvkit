@@ -4,6 +4,7 @@
 package blurs
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/Elliot727/gocvkit/processor"
@@ -16,20 +17,30 @@ type GaussianBlur struct {
 	Sigma  float64 `toml:"sigma"`  // Sigma is the standard deviation for Gaussian kernel
 }
 
-// Process applies Gaussian blur using the configured parameters.
-func (g *GaussianBlur) Process(src gocv.Mat, dst *gocv.Mat) {
-	k := g.Kernel
-
-	// Enforce positive odd kernel size
-	if k < 1 {
-		k = 1
+// Validate checks constraints before the pipeline starts.
+func (g *GaussianBlur) Validate() error {
+	if g.Kernel < 1 {
+		return fmt.Errorf("kernel must be >= 1, got %d", g.Kernel)
 	}
-	if k%2 == 0 {
-		k++
+	if g.Kernel%2 == 0 {
+		return fmt.Errorf("kernel must be odd, got %d (auto-fixing is magic, don't do it)", g.Kernel)
 	}
-
-	gocv.GaussianBlur(src, dst, image.Pt(k, k), g.Sigma, g.Sigma, gocv.BorderDefault)
+	if g.Sigma < 0 {
+		return fmt.Errorf("sigma must be >= 0, got %f", g.Sigma)
+	}
+	return nil
 }
+
+// Process applies Gaussian blur using the configured parameters.
+func (g *GaussianBlur) Process(src gocv.Mat, dst *gocv.Mat) error {
+	if src.Empty() {
+		return nil
+	}
+	gocv.GaussianBlur(src, dst, image.Pt(g.Kernel, g.Kernel), g.Sigma, g.Sigma, gocv.BorderDefault)
+	return nil
+}
+
+func (g *GaussianBlur) Close() {}
 
 func init() {
 	// Register directly with default values.

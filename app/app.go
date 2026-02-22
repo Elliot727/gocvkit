@@ -31,8 +31,8 @@ import (
 	"github.com/Elliot727/gocvkit/pipeline"
 	"github.com/Elliot727/gocvkit/recorder"
 	"github.com/Elliot727/gocvkit/streamer"
-
 	"github.com/fsnotify/fsnotify"
+
 	"gocv.io/x/gocv"
 )
 
@@ -296,11 +296,13 @@ func (a *App) Run(frameCallback func(*gocv.Mat)) error {
 func (a *App) watchConfig() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
+		log.Printf("Failed to create config watcher: %v", err)
 		return
 	}
 	defer watcher.Close()
 
 	if err := watcher.Add(a.configPath); err != nil {
+		log.Printf("Failed to add config path to watcher: %v", err)
 		return
 	}
 
@@ -311,30 +313,51 @@ func (a *App) watchConfig() {
 			if !ok || ev.Op&fsnotify.Write == 0 {
 				continue
 			}
+			// Debounce rapid saves
 			if time.Since(last) < 200*time.Millisecond {
 				continue
 			}
 			last = time.Now()
 
-			if cfg, err := config.Load(a.configPath); err == nil {
-				if steps, err := builder.BuildPipeline(cfg); err == nil {
-					newP := pipeline.New(steps)
-
-					a.mu.Lock()
-					old := a.Pipeline
-					a.Pipeline = newP
-					a.Config = cfg
-					a.mu.Unlock()
-
-					if old != nil {
-						time.AfterFunc(150*time.Millisecond, old.Close)
-					}
-
-					log.Println("Pipeline hot-reloaded!")
-				}
+			// 1. Load Config
+			cfg, err := config.Load(a.configPath)
+			if err != nil {
+				log.Printf("❌ Config reload failed: %v", err)
+				continue // Skip to next event
 			}
-		case <-watcher.Errors:
-			// ignore
+
+			// 2. Build Pipeline
+			steps, err := builder.BuildPipeline(cfg)
+			if err != nil {
+				// CRITICAL: Log the error here so the user sees it!
+				log.Printf("Pipeline build failed (config ignored): %v", err)
+				continue // Keep running with the OLD pipeline
+			}
+
+			// 3. Swap Pipeline
+			newP := pipeline.New(steps)
+
+			a.mu.Lock()
+			old := a.Pipeline
+			a.Pipeline = newP
+			a.Config = cfg
+			a.mu.Unlock()
+
+			// 4. Cleanup Old Pipeline safely
+			if old != nil {
+				// Give the running loop a moment to finish using the old pipeline
+				time.AfterFunc(150*time.Millisecond, func() {
+					old.Close()
+				})
+			}
+
+			log.Println("Pipeline hot-reloaded successfully!")
+
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+			log.Printf("Watcher error: %v", err)
 		}
 	}
 }

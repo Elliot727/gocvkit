@@ -15,7 +15,7 @@ import (
 // Processable is the simplified interface for user-defined filters.
 // You only need to implement this.
 type Processable interface {
-	Process(src gocv.Mat, dst *gocv.Mat)
+	Process(src gocv.Mat, dst *gocv.Mat) error
 }
 
 // Step is the internal interface used by the Pipeline.
@@ -23,6 +23,7 @@ type Processable interface {
 type Step interface {
 	Processable
 	Name() string
+	Close()
 }
 
 // Factory is a function that creates a Step from configuration.
